@@ -1,8 +1,7 @@
-# isort: skip_file
+import asyncio
 
-from src.buffering_strategy.buffering_strategy_factory import (
-    BufferingStrategyFactory,
-)
+from src.buffering_strategy.buffering_strategy_factory import BufferingStrategyFactory
+from src.postprocessing.postprocessing_factory import PostprocessingFactory
 
 
 class Client:
@@ -29,39 +28,36 @@ class Client:
         self.client_id = client_id
         self.buffer = bytearray()
         self.scratch_buffer = bytearray()
-        self.config = {
-            "language": None,
-            "processing_strategy": "silence_at_end_of_chunk",
-            "processing_args": {
-                "chunk_length_seconds": 5,
-                "chunk_offset_seconds": 0.1,
-            },
-        }
+        self.state = {}
+        self.config = {"language": None,
+                       "processing_strategy": "overlapping_buffers", 
+                       "processing_args": {
+                           "chunk_length_seconds": 5, 
+                           "chunk_overlap_seconds": 0.1
+                           },
+                       "postprocessing_strategy": "rule_based_speech_processor2",
+                       "postprocessing_args": {"max_frames": 2}
+                       }
         self.file_counter = 0
         self.total_samples = 0
         self.sampling_rate = sampling_rate
         self.samples_width = samples_width
-        self.buffering_strategy = (
-            BufferingStrategyFactory.create_buffering_strategy(
-                self.config["processing_strategy"],
-                self,
-                **self.config["processing_args"],
-            )
-        )
+        self.buffering_strategy = BufferingStrategyFactory.create_buffering_strategy(self.config['processing_strategy'], self, **self.config['processing_args'])
+        self.postprocessing_strategy = PostprocessingFactory.create_postprocessing_pipeline(self.config['postprocessing_strategy'], **self.config['postprocessing_args'])
+        self.semaphore = asyncio.Semaphore(1)
+        self.current_start_time = 0.0
+        self.current_end_time = 0.0
 
     def update_config(self, config_data):
         self.config.update(config_data)
-        self.buffering_strategy = (
-            BufferingStrategyFactory.create_buffering_strategy(
-                self.config["processing_strategy"],
-                self,
-                **self.config["processing_args"],
-            )
-        )
+        self.buffering_strategy = BufferingStrategyFactory.create_buffering_strategy(self.config['processing_strategy'], self, **self.config['processing_args'])
+        self.postprocessing_strategy = PostprocessingFactory.create_postprocessing_pipeline(self.config['postprocessing_strategy'], **self.config['postprocessing_args'])
 
     def append_audio_data(self, audio_data):
         self.buffer.extend(audio_data)
         self.total_samples += len(audio_data) / self.samples_width
+        self.current_start_time = self.current_end_time
+        self.current_end_time += (len(audio_data) / self.samples_width) / self.sampling_rate
 
     def clear_buffer(self):
         self.buffer.clear()
@@ -71,8 +67,14 @@ class Client:
 
     def get_file_name(self):
         return f"{self.client_id}_{self.file_counter}.wav"
+    
+    async def process_audio(self, websocket, vad_pipeline, asr_pipeline):
+        await self.buffering_strategy.process_audio(websocket, vad_pipeline, asr_pipeline, self.postprocessing_strategy)
 
-    def process_audio(self, websocket, vad_pipeline, asr_pipeline):
-        self.buffering_strategy.process_audio(
-            websocket, vad_pipeline, asr_pipeline
-        )
+    
+    async def append_and_process_audio(self, audio_data, websocket, vad_pipeline, asr_pipeline):
+        self.buffer.extend(audio_data)
+        self.total_samples += len(audio_data) / self.samples_width
+        self.current_start_time = self.current_end_time
+        self.current_end_time += (len(audio_data) / self.samples_width) / self.sampling_rate
+        await self.buffering_strategy.process_audio(websocket, vad_pipeline, asr_pipeline, self.postprocessing_strategy)

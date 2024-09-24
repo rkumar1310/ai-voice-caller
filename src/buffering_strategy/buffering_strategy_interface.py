@@ -15,7 +15,7 @@ class BufferingStrategyInterface:
                        by subclasses.
     """
 
-    def process_audio(self, websocket, vad_pipeline, asr_pipeline):
+    async def process_audio(self, websocket, vad_pipeline, asr_pipeline, postprocessing_pipeline):
         """
         Process audio data using the given WebSocket connection, VAD pipeline,
         and ASR pipeline.

@@ -118,7 +118,7 @@ class FasterWhisperASR(ASRInterface):
             model_size, device="cuda", compute_type="float16"
         )
 
-    async def transcribe(self, client):
+    async def transcribe(self, buffer_start_time, client):
         file_path = await save_audio_to_file(
             client.scratch_buffer, client.get_file_name()
         )

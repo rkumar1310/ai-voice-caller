@@ -1,5 +1,5 @@
-from .buffering_strategies import SilenceAtEndOfChunk
-
+from .chunks_with_vad import SilenceAtEndOfChunk
+from .overlapping_buffers import OverlappingBuffers
 
 class BufferingStrategyFactory:
     """
@@ -45,5 +45,7 @@ class BufferingStrategyFactory:
         """
         if type == "silence_at_end_of_chunk":
             return SilenceAtEndOfChunk(client, **kwargs)
+        elif type == "overlapping_buffers":
+            return OverlappingBuffers(client, **kwargs)
         else:
             raise ValueError(f"Unknown buffering strategy type: {type}")

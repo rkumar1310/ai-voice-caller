@@ -1,10 +1,10 @@
-import json
-import logging
-import ssl
-import uuid
-
 import websockets
+import uuid
+import json
+import asyncio
+import ssl
 
+from src.audio_utils import save_audio_to_file
 from src.client import Client
 
 
@@ -53,7 +53,7 @@ class Server:
             message = await websocket.recv()
 
             if isinstance(message, bytes):
-                client.append_audio_data(message)
+                await client.append_and_process_audio(message, websocket, self.vad_pipeline, self.asr_pipeline)
             elif isinstance(message, str):
                 config = json.loads(message)
                 if config.get("type") == "config":
