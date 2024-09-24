@@ -32,8 +32,8 @@ class Client:
         self.config = {"language": None,
                        "processing_strategy": "overlapping_buffers", 
                        "processing_args": {
-                           "chunk_length_seconds": 5, 
-                           "chunk_overlap_seconds": 0.1
+                           "chunk_length_seconds": 2, 
+                           "chunk_overlap_seconds": 0.5
                            },
                        "postprocessing_strategy": "rule_based_speech_processor2",
                        "postprocessing_args": {"max_frames": 2}

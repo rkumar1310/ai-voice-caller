@@ -3,6 +3,7 @@ import uuid
 import json
 import asyncio
 import ssl
+import logging
 
 from src.audio_utils import save_audio_to_file
 from src.client import Client

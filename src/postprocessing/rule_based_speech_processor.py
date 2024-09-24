@@ -117,7 +117,6 @@ class RuleBasedSpeechProcessor2:
         return words_to_return
 
     def merge_word(self, text, new_word_info):
-        print("merge_word")
         """ Merges a new word into the existing text, handling overlaps and choosing by probability. """
         if not text:
             return [new_word_info], True

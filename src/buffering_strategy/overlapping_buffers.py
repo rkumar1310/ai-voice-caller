@@ -65,7 +65,6 @@ class OverlappingBuffers:
                     'data': bytearray(self.client.buffer),
                     'end_time': self.client.current_start_time + self.total_chunk_length
                 }
-                print(f"Starting a new buffer at {self.client.current_start_time}: end {self.client.current_start_time + self.total_chunk_length}")
                 buffers.append(new_buffer)
                 # Schedule next start time after the current chunk minus the overlap
                 self.next_start_time = self.client.current_start_time + self.chunk_length_seconds - self.overlap_seconds
@@ -80,7 +79,6 @@ class OverlappingBuffers:
             # Process buffers ready for transcription
             for buffer in buffers[:]:
                 if self.client.current_end_time >= buffer['end_time']:
-                    print(f"Processing buffer at {self.client.current_start_time}: end {buffer['start_time']}:{buffer['end_time']}, ({len(buffer['data']) / (sample_rate * self.client.samples_width)}) ")
                     await self.process_audio_async(buffer['start_time'], buffer['data'], websocket, asr_pipeline, postprocessing_pipeline)
                     buffers.remove(buffer)
 
