@@ -4,8 +4,8 @@ import json
 import asyncio
 import ssl
 
-from src.audio_utils import save_audio_to_file
-from src.client import Client
+from audio_utils import save_audio_to_file
+from client import Client
 
 class Server:
     """

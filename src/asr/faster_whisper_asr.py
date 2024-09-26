@@ -2,7 +2,7 @@ import os
 from faster_whisper import WhisperModel
 
 from .asr_interface import ASRInterface
-from src.audio_utils import save_audio_to_file
+from audio_utils import save_audio_to_file
 
 language_codes = {
     "afrikaans": "af",
