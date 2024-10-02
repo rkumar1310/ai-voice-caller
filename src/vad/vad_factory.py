@@ -1,4 +1,5 @@
 from .pyannote_vad import PyannoteVAD
+from .demucs_vad import DemucsVAD
 
 class VADFactory:
     """
@@ -17,7 +18,12 @@ class VADFactory:
         Returns:
             VADInterface: An instance of a class that implements VADInterface.
         """
+
+        print(f"Creating {type} VAD")
+        
         if type == "pyannote":
             return PyannoteVAD(**kwargs)
+        if type == "demucs":
+            return DemucsVAD(**kwargs)
         else:
             raise ValueError(f"Unknown VAD pipeline type: {type}")

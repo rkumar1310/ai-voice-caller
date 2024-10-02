@@ -78,7 +78,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
             websocket (Websocket): The WebSocket connection for sending transcriptions.
             vad_pipeline: The voice activity detection pipeline.
             asr_pipeline: The automatic speech recognition pipeline.
-        """   
+        """
         start = time.time()
         vad_results = await vad_pipeline.detect_activity(self.client)
 
