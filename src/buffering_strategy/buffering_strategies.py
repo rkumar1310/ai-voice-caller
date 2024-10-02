@@ -59,7 +59,7 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         chunk_length_in_bytes = self.chunk_length_seconds * self.client.sampling_rate * self.client.samples_width
         if len(self.client.buffer) > chunk_length_in_bytes:
             if self.processing_flag:
-                exit("Error in realtime processing: tried processing a new chunk while the previous one was still being processed")
+                print("Error in realtime processing: tried processing a new chunk while the previous one was still being processed. Expect random errors")
 
             self.client.scratch_buffer += self.client.buffer
             self.client.buffer.clear()
