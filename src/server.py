@@ -60,17 +60,22 @@ class Server:
                     client.update_config(config["data"])
                     logging.debug(f"Updated config: {client.config}")
                     continue
+                if config.get("type") == "stop_talking":
+                    client.process_audio(
+                        websocket, self.vad_pipeline, self.asr_pipeline
+                    )
+                    continue
             else:
                 print(f"Unexpected message type from {client.client_id}")
 
-            # this is synchronous, any async operation is in BufferingStrategy
-            client.process_audio(
-                websocket, self.vad_pipeline, self.asr_pipeline
-            )
+            # # this is synchronous, any async operation is in BufferingStrategy
+            # client.process_audio(websocket, self.vad_pipeline, self.asr_pipeline)
 
     async def handle_websocket(self, websocket):
         client_id = str(uuid.uuid4())
-        client = Client(client_id, self.sampling_rate, self.samples_width)
+        client = Client(
+            client_id, self.sampling_rate, self.samples_width, websocket=websocket
+        )
         self.connected_clients[client_id] = client
 
         print(f"Client {client_id} connected")
@@ -90,9 +95,7 @@ class Server:
             # Load your server's certificate and private key
             # Replace 'your_cert_path.pem' and 'your_key_path.pem' with the
             # actual paths to your files
-            ssl_context.load_cert_chain(
-                certfile=self.certfile, keyfile=self.keyfile
-            )
+            ssl_context.load_cert_chain(certfile=self.certfile, keyfile=self.keyfile)
 
             print(
                 f"WebSocket server ready to accept secure connections on "
@@ -110,6 +113,4 @@ class Server:
                 f"WebSocket server ready to accept secure connections on "
                 f"{self.host}:{self.port}"
             )
-            return websockets.serve(
-                self.handle_websocket, self.host, self.port
-            )
+            return websockets.serve(self.handle_websocket, self.host, self.port)

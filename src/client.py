@@ -1,8 +1,10 @@
 # isort: skip_file
 
+import asyncio
 from src.buffering_strategy.buffering_strategy_factory import (
     BufferingStrategyFactory,
 )
+from src.multi_agent.multi_agent_tts import MultiAgentTTS
 
 
 class Client:
@@ -25,7 +27,7 @@ class Client:
         samples_width (int): The width of each audio sample in bits.
     """
 
-    def __init__(self, client_id, sampling_rate, samples_width):
+    def __init__(self, client_id, sampling_rate, samples_width, websocket):
         self.client_id = client_id
         self.buffer = bytearray()
         self.scratch_buffer = bytearray()
@@ -41,22 +43,26 @@ class Client:
         self.total_samples = 0
         self.sampling_rate = sampling_rate
         self.samples_width = samples_width
-        self.buffering_strategy = (
-            BufferingStrategyFactory.create_buffering_strategy(
-                self.config["processing_strategy"],
-                self,
-                **self.config["processing_args"],
-            )
+        self.buffering_strategy = BufferingStrategyFactory.create_buffering_strategy(
+            self.config["processing_strategy"],
+            self,
+            **self.config["processing_args"],
         )
+        self.websocket = websocket
+        self.multi_agent = MultiAgentTTS(self, websocket)
+        self.transcription_event = asyncio.Event()
+        self.transcription_text = None
+
+    def on_transcription(self, transcription):
+        self.transcription_text = transcription
+        self.transcription_event.set()
 
     def update_config(self, config_data):
         self.config.update(config_data)
-        self.buffering_strategy = (
-            BufferingStrategyFactory.create_buffering_strategy(
-                self.config["processing_strategy"],
-                self,
-                **self.config["processing_args"],
-            )
+        self.buffering_strategy = BufferingStrategyFactory.create_buffering_strategy(
+            self.config["processing_strategy"],
+            self,
+            **self.config["processing_args"],
         )
 
     def append_audio_data(self, audio_data):
@@ -73,6 +79,4 @@ class Client:
         return f"{self.client_id}_{self.file_counter}.wav"
 
     def process_audio(self, websocket, vad_pipeline, asr_pipeline):
-        self.buffering_strategy.process_audio(
-            websocket, vad_pipeline, asr_pipeline
-        )
+        self.buffering_strategy.process_audio(websocket, vad_pipeline, asr_pipeline)

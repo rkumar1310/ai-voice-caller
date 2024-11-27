@@ -2,6 +2,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 
 from src.asr.asr_factory import ASRFactory
 from src.vad.vad_factory import VADFactory
@@ -85,6 +86,9 @@ def main():
 
     vad_pipeline = VADFactory.create_vad_pipeline(args.vad_type, **vad_args)
     asr_pipeline = ASRFactory.create_asr_pipeline(args.asr_type, **asr_args)
+
+    # Hack set OpenAI API key
+    os.environ["OPENAI_API_KEY"] = asr_args.get("openai_key")
 
     server = Server(
         vad_pipeline,
