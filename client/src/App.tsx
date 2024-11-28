@@ -1,7 +1,11 @@
 import "browser-reset/reset.css";
-import SpeakerBox from "./components/SpeakerBox";
-import MicIcon from "./icons/Mic";
-import BotIcon from "./icons/Bot";
+import Agent from "./components/Agent";
+import User from "./components/User";
+import WebsocketProvider from "./providers/WebsocketProvider";
+import ApplicationStateProvider from "./providers/ApplicationStateProvider";
+import AudioPlaybackProvider from "./providers/AudioPlaybackProvider";
+import StartButton from "./components/StartButton";
+import { MicrophoneProvider } from "./providers/MicrophoneProvider";
 function App() {
     return (
         <>
@@ -16,34 +20,20 @@ function App() {
                         "radial-gradient(circle, rgba(62,57,115,1) 0%, rgba(10,9,23,1) 100%)",
                     flexDirection: "column",
                     gap: "10rem",
+                    position: "relative",
                 }}
             >
-                <SpeakerBox active>
-                    <BotIcon
-                        style={{
-                            width: "50%",
-                            height: "50%",
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            color: "rgba(255, 255, 255, 0.8)",
-                        }}
-                    />
-                </SpeakerBox>
-                <SpeakerBox>
-                    <MicIcon
-                        style={{
-                            width: "50%",
-                            height: "50%",
-                            position: "absolute",
-                            top: "50%",
-                            left: "50%",
-                            transform: "translate(-50%, -50%)",
-                            color: "rgba(255, 255, 255, 0.8)",
-                        }}
-                    />
-                </SpeakerBox>
+                <ApplicationStateProvider>
+                    <AudioPlaybackProvider>
+                        <MicrophoneProvider>
+                            <WebsocketProvider address="ws://localhost:8765">
+                                <Agent />
+                                <User />
+                                <StartButton />
+                            </WebsocketProvider>
+                        </MicrophoneProvider>
+                    </AudioPlaybackProvider>
+                </ApplicationStateProvider>
             </div>
         </>
     );

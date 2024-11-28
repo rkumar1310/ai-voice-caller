@@ -33,7 +33,7 @@ class Client:
         self.scratch_buffer = bytearray()
         self.config = {
             "language": None,
-            "processing_strategy": "silence_at_end_of_chunk",
+            "processing_strategy": "spoken_audio",
             "processing_args": {
                 "chunk_length_seconds": 5,
                 "chunk_offset_seconds": 0.1,

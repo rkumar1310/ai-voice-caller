@@ -1,4 +1,4 @@
-from .buffering_strategies import SilenceAtEndOfChunk
+from .buffering_strategies import SilenceAtEndOfChunk, SpokenAudio
 
 
 class BufferingStrategyFactory:
@@ -45,5 +45,7 @@ class BufferingStrategyFactory:
         """
         if type == "silence_at_end_of_chunk":
             return SilenceAtEndOfChunk(client, **kwargs)
+        if type == "spoken_audio":
+            return SpokenAudio(client, **kwargs)
         else:
             raise ValueError(f"Unknown buffering strategy type: {type}")

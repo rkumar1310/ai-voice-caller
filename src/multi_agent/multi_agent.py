@@ -133,6 +133,7 @@ class MultiAgent:
             CallConnected(),
             TopicId(type=group_chat_topic_type, source=session_id),
         )
+
         await self.runtime.stop_when_idle()
 
     async def stop(self):

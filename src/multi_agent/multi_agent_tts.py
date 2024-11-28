@@ -23,11 +23,31 @@ class MultiAgentTTS:
         print("MultiAgentTTS: received message", message, flush=True)
         from openai import OpenAI
 
+        await self.elevenlabs_tts(message.body.content)
+
+    async def openai_tts(self, message):
         response = self.openai_client.audio.speech.create(
             model="tts-1",
             voice="onyx",
-            input=message.body.content,
+            input=message,
         )
         # send this audio data to the websocket
-        for data in response.iter_bytes():
+        for data in response.iter_bytes(1024):
             await self.websocket.send(data)
+
+    async def elevenlabs_tts(self, message):
+        from elevenlabs import stream
+        from elevenlabs.client import ElevenLabs
+
+        client = ElevenLabs(
+            api_key="sk_4b12e31aac58ccfddd7c31ea9a568fabbdd6735f894978ac",  # Defaults to ELEVEN_API_KEY
+        )
+
+        # for chunk in client.generate(
+        #     text=message, voice="Brian", model="eleven_turbo_v2_5", stream=True
+        # ):
+        #     await self.websocket.send(chunk)
+
+        audio = client.generate(text=message, voice="Brian", model="eleven_turbo_v2_5")
+
+        await self.websocket.send(audio)
