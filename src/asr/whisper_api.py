@@ -25,6 +25,7 @@ class WhisperAPI(ASRInterface):
             model="whisper-1",
             file=audio_file,
             response_format="text",
+            prompt=client.transcription_text,
         )
 
         # os.remove(file_path)

@@ -83,8 +83,7 @@ class MultiAgent:
                 description=user_description,
                 group_chat_topic_type=group_chat_topic_type,
                 on_message_output=self.on_message_output,
-                transcription_event=self.client.transcription_event,
-                transcription_source=lambda: self.client.transcription_text,
+                transcription_queue=self.client.transcription_queue,
             ),
         )
         await self.runtime.add_subscription(

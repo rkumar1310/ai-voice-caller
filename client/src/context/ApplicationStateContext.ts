@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 
 export interface ApplicationState {
     isConnected: boolean;
-    isSpeaking: boolean;
+    micState: "speaking" | "silent";
 }
 
 export const ApplicationStateContext = createContext<{

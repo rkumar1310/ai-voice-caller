@@ -3,12 +3,13 @@ import { useApplicationState } from "@/context/ApplicationStateContext";
 import { useAudioPlaybackContext } from "@/context/AudioPlaybackContext";
 import { useWebsocketContext } from "@/context/WebsocketContext";
 import BotIcon from "@/icons/Bot";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 
-export default function Agent({ active }: { active?: boolean }) {
+export default function Agent() {
     const { addMessageCallback } = useWebsocketContext();
     const { enqueueAudioChunk, stopAndClearAudio } = useAudioPlaybackContext();
     const { applicationState } = useApplicationState();
+    const [active, setActive] = useState(false);
 
     const processWebsocketMessage = useCallback(
         async (event: MessageEvent) => {
@@ -28,10 +29,11 @@ export default function Agent({ active }: { active?: boolean }) {
     );
 
     useEffect(() => {
-        if (applicationState.isSpeaking) {
+        if (applicationState.micState === "speaking") {
             stopAndClearAudio();
+            setActive(false);
         }
-    }, [applicationState.isSpeaking, stopAndClearAudio]);
+    }, [applicationState.micState, stopAndClearAudio]);
 
     useEffect(() => {
         addMessageCallback(processWebsocketMessage);

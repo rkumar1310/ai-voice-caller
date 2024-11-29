@@ -38,15 +38,13 @@ class PyannoteVAD(VADInterface):
         pyannote_args = kwargs.get(
             "pyannote_args",
             {
-                "onset": 0.5,
-                "offset": 0.5,
+                "onset": 0.9,
+                "offset": 0.9,
                 "min_duration_on": 0.3,
                 "min_duration_off": 0.3,
             },
         )
-        self.model = Model.from_pretrained(
-            model_name, use_auth_token=auth_token
-        )
+        self.model = Model.from_pretrained(model_name, use_auth_token=auth_token)
         self.vad_pipeline = VoiceActivityDetection(segmentation=self.model)
         self.vad_pipeline.instantiate(pyannote_args)
 

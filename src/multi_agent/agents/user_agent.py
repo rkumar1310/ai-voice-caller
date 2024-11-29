@@ -16,19 +16,18 @@ from src.multi_agent.messages import (
 
 
 class UserAgent(RoutedAgent):
+
     def __init__(
         self,
         description: str,
         group_chat_topic_type: str,
         on_message_output: callable,
-        transcription_event: asyncio.Event,
-        transcription_source: str,
+        transcription_queue: asyncio.Queue,
     ) -> None:
         super().__init__(description=description)
         self._group_chat_topic_type = group_chat_topic_type
         self.on_message_output = on_message_output
-        self.transcription_event = transcription_event
-        self.current_transcription = transcription_source
+        self.transcription_queue = transcription_queue
 
     @message_handler
     async def handle_message(
@@ -48,10 +47,8 @@ class UserAgent(RoutedAgent):
         # we need to wait for the client to send the data
         # before we can proceed
         print("UserAgent: waiting for data from client", flush=True)
-        await self.transcription_event.wait()
-        self.transcription_event.clear()
-
-        user_input = self.current_transcription()
+        # wait for the transcription to be available on the queue
+        user_input = await self.transcription_queue.get()
 
         print("UserAgent: received data from client", flush=True)
         print("UserAgent: current_transcription", user_input, flush=True)

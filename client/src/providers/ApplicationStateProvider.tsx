@@ -12,7 +12,7 @@ export default function ApplicationStateProvider({
 }) {
     const [applicationState, setApplicationState] = useState<ApplicationState>({
         isConnected: false,
-        isSpeaking: false,
+        micState: "silent",
     });
 
     return (

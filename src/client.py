@@ -35,7 +35,7 @@ class Client:
             "language": None,
             "processing_strategy": "silence_at_end_of_chunk",
             "processing_args": {
-                "chunk_length_seconds": 5,
+                "chunk_length_seconds": 2,
                 "chunk_offset_seconds": 0.1,
             },
         }
@@ -50,12 +50,13 @@ class Client:
         )
         self.websocket = websocket
         self.multi_agent = MultiAgentTTS(self, websocket)
-        self.transcription_event = asyncio.Event()
-        self.transcription_text = None
+        self.transcription_queue = asyncio.Queue()
+        self.transcription_text = ""
 
     def on_transcription(self, transcription):
-        self.transcription_text += transcription
-        self.transcription_event.set()
+        # reset because the input is sent to the TTS
+        self.transcription_text = ""
+        self.transcription_queue.put_nowait(transcription)
 
     def clear_speech(self):
         self.transcription_text = ""
