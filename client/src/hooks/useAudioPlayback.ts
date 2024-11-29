@@ -1,66 +1,56 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 export default function useAudioPlayback() {
     const [context, setContext] = useState<AudioContext | null>(null);
-    const [audioBufferQueue, setAudioBufferQueue] = useState<AudioBuffer[]>([]);
-    useEffect(() => {
-        const audioContext = new AudioContext();
-        setContext(audioContext);
+    const workletNode = useRef<AudioWorkletNode | null>(null);
 
-        return () => {
-            audioContext.close();
-        };
-    }, []);
+    const setupPlayBack = useCallback(async () => {
+        if (context) return; // Prevent multiple setups
+        const audioContext = new AudioContext({
+            sampleRate: 24000,
+        });
+        setContext(audioContext);
+        console.log("Audio context created", audioContext.sampleRate);
+
+        try {
+            await audioContext.audioWorklet.addModule(
+                "playback-audio-processor.js" // Update the path
+            );
+            const node = new AudioWorkletNode(audioContext, "audio-processor");
+            node.connect(audioContext.destination);
+            workletNode.current = node;
+        } catch (error) {
+            console.error("Failed to load audio processor:", error);
+        }
+    }, [context]);
 
     const enqueueAudioChunk = useCallback(
-        (audioChunk: ArrayBuffer) => {
-            if (!context) {
+        async (audioChunk: ArrayBuffer) => {
+            if (!context || !workletNode.current) {
                 return;
             }
 
-            console.log("Decoding audio chunk");
+            // const audioBuffer = await context.decodeAudioData(audioChunk);
+            const audioBuffer = new Int16Array(audioChunk);
+            if (!audioBuffer) {
+                return;
+            }
 
-            context.decodeAudioData(audioChunk).then((audioBuffer) => {
-                if (!audioBuffer) {
-                    return;
-                }
-                setAudioBufferQueue((prevAudioBufferQueue) => [
-                    ...prevAudioBufferQueue,
-                    audioBuffer,
-                ]);
+            // Convert AudioBuffer to Float32Array maybe inside the AudioWorklet
+            // const channelData = audioBuffer.getChannelData(0);
+            workletNode.current.port.postMessage({
+                type: "enqueue",
+                chunk: audioBuffer,
             });
         },
         [context]
     );
 
-    useEffect(() => {
-        console.log("Playing next audio chunk", audioBufferQueue, context);
-        if (!context || !audioBufferQueue) {
-            return;
-        }
-        if (audioBufferQueue.length > 0 && context.state !== "suspended") {
-            console.log("Playing audio chunk");
-            const audioBuffer = audioBufferQueue.shift();
-            if (!audioBuffer) {
-                return;
-            }
-            const source = context.createBufferSource();
-            source.buffer = audioBuffer;
-            source.connect(context.destination);
-            source.start();
-            source.onended = () => {
-                console.log("Audio chunk ended");
-            };
-        }
-    }, [audioBufferQueue, context]);
-
     const stopAndClearAudio = useCallback(() => {
-        if (!context) {
-            return;
+        if (workletNode.current) {
+            workletNode.current.port.postMessage({ type: "clear" });
         }
-        context.suspend();
-        setAudioBufferQueue([]);
-    }, [context]);
+    }, []);
 
-    return { context, enqueueAudioChunk, stopAndClearAudio };
+    return { enqueueAudioChunk, stopAndClearAudio, setupPlayBack, context };
 }

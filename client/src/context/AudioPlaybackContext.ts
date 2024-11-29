@@ -4,6 +4,7 @@ export const AudioPlaybackContext = createContext<{
     context: AudioContext | null;
     enqueueAudioChunk: (audioChunk: ArrayBuffer) => void;
     setupPlayBack: () => void;
+    stopAndClearAudio: () => void;
 } | null>(null);
 
 export const useAudioPlaybackContext = () => {

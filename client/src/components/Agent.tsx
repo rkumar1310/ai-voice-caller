@@ -1,4 +1,5 @@
 import SpeakerBox from "@/components/SpeakerBox";
+import { useApplicationState } from "@/context/ApplicationStateContext";
 import { useAudioPlaybackContext } from "@/context/AudioPlaybackContext";
 import { useWebsocketContext } from "@/context/WebsocketContext";
 import BotIcon from "@/icons/Bot";
@@ -6,20 +7,18 @@ import { useCallback, useEffect } from "react";
 
 export default function Agent({ active }: { active?: boolean }) {
     const { addMessageCallback } = useWebsocketContext();
-    const { enqueueAudioChunk } = useAudioPlaybackContext();
+    const { enqueueAudioChunk, stopAndClearAudio } = useAudioPlaybackContext();
+    const { applicationState } = useApplicationState();
 
     const processWebsocketMessage = useCallback(
         async (event: MessageEvent) => {
             console.log("Websocket message:", event.data);
             if (event.data instanceof ArrayBuffer) {
                 // Handle audio chunk (ArrayBuffer)
-                console.log("Received audio ArrayBuffer");
                 enqueueAudioChunk(event.data);
             } else if (event.data instanceof Blob) {
                 // Handle audio chunk (Blob)
-                console.log("Received audio Blob");
                 const arrayBuffer = await event.data.arrayBuffer();
-                console.log("ArrayBuffer:", arrayBuffer);
                 enqueueAudioChunk(arrayBuffer);
             } else {
                 console.warn("Unknown data type received:", event.data);
@@ -27,6 +26,12 @@ export default function Agent({ active }: { active?: boolean }) {
         },
         [enqueueAudioChunk]
     );
+
+    useEffect(() => {
+        if (applicationState.isSpeaking) {
+            stopAndClearAudio();
+        }
+    }, [applicationState.isSpeaking, stopAndClearAudio]);
 
     useEffect(() => {
         addMessageCallback(processWebsocketMessage);

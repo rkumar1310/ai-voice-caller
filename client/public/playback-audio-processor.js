@@ -7,7 +7,12 @@ class AudioProcessor extends AudioWorkletProcessor {
 
         this.port.onmessage = (event) => {
             if (event.data.type === "enqueue") {
-                this.audioQueue.push(event.data.chunk);
+                const int16Array = event.data.chunk;
+                const float32Array = new Float32Array(int16Array.length);
+                for (let i = 0; i < int16Array.length; i++) {
+                    float32Array[i] = int16Array[i] / 0x8000; // Convert Int16 to Float32
+                }
+                this.audioQueue.push(float32Array);
             } else if (event.data.type === "clear") {
                 this.audioQueue = [];
                 this.currentBuffer = null;
@@ -18,7 +23,6 @@ class AudioProcessor extends AudioWorkletProcessor {
 
     process(inputs, outputs) {
         const output = outputs[0][0];
-
         for (let i = 0; i < output.length; i++) {
             if (
                 !this.currentBuffer ||

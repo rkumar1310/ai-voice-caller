@@ -65,6 +65,9 @@ class Server:
                         websocket, self.vad_pipeline, self.asr_pipeline
                     )
                     continue
+                if config.get("type") == "dialog_end":
+                    client.clear_speech()
+                    continue
             else:
                 print(f"Unexpected message type from {client.client_id}")
 

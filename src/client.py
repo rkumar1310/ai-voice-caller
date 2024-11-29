@@ -33,7 +33,7 @@ class Client:
         self.scratch_buffer = bytearray()
         self.config = {
             "language": None,
-            "processing_strategy": "spoken_audio",
+            "processing_strategy": "silence_at_end_of_chunk",
             "processing_args": {
                 "chunk_length_seconds": 5,
                 "chunk_offset_seconds": 0.1,
@@ -54,8 +54,11 @@ class Client:
         self.transcription_text = None
 
     def on_transcription(self, transcription):
-        self.transcription_text = transcription
+        self.transcription_text += transcription
         self.transcription_event.set()
+
+    def clear_speech(self):
+        self.transcription_text = ""
 
     def update_config(self, config_data):
         self.config.update(config_data)
