@@ -37,7 +37,6 @@ export default function useWebsocket({
             return;
         }
 
-        console.log("Adding message listeners");
         onMessageCallbacks.forEach((callback) => {
             websocket.addEventListener("message", callback);
         });
@@ -45,7 +44,7 @@ export default function useWebsocket({
 
     const sendWebsocketMessage = useCallback(
         (message: ArrayBufferLike | string) => {
-            if (websocket) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
                 websocket.send(message);
             }
         },

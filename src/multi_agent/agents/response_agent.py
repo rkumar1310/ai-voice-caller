@@ -6,6 +6,7 @@ from autogen_core.components.models import (
     UserMessage,
     AssistantMessage,
     SystemMessage,
+    CreateResult,
 )
 from autogen_core.components import (
     DefaultTopicId,
@@ -19,11 +20,13 @@ from rich.markdown import Markdown
 
 
 class ResponseAgent(BaseGroupChatAgent):
+
     def __init__(
         self,
         description: str,
         group_chat_topic_type: str,
         model_client: ChatCompletionClient,
+        client,
     ) -> None:
         super().__init__(
             description=description,
@@ -42,6 +45,7 @@ class ResponseAgent(BaseGroupChatAgent):
             Experience: 5 years of experience in software development
             Skills: Java, Python, C++, SQL
             """,
+            client=client,
         )
 
     @message_handler
@@ -56,9 +60,15 @@ class ResponseAgent(BaseGroupChatAgent):
                 source="system",
             )
         )
-        completion = await self._model_client.create(
+        # async generator
+        async for item in self._model_client.create_stream(
             [self._system_message] + self._chat_history
-        )
+        ):
+            if isinstance(item, CreateResult):
+                completion = item
+            else:
+                print(item, flush=True)
+
         assert isinstance(completion.content, str)
         self._chat_history.append(
             AssistantMessage(content=completion.content, source=self.id.type)

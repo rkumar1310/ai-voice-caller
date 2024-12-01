@@ -111,12 +111,14 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
         start = time.time()
         vad_results = await vad_pipeline.detect_activity(self.client)
 
-        if len(vad_results) > 0:
-            # we need to inform the client that the user has started talking
-            await websocket.send(json.dumps({"type": "mic", "state": "speaking"}))
-        else:
-            # we need to inform the client that the user has stopped talking
-            await websocket.send(json.dumps({"type": "mic", "state": "silent"}))
+        # TODO: optimize this
+
+        # if len(vad_results) > 0:
+        #     # we need to inform the client that the user has started talking
+        #     await websocket.send(json.dumps({"type": "mic", "state": "speaking"}))
+        # else:
+        #     # we need to inform the client that the user has stopped talking
+        #     await websocket.send(json.dumps({"type": "mic", "state": "silent"}))
 
         if len(vad_results) == 0:
             self.client.scratch_buffer.clear()
@@ -129,8 +131,16 @@ class SilenceAtEndOfChunk(BufferingStrategyInterface):
             / (self.client.sampling_rate * self.client.samples_width)
         ) - self.chunk_offset_seconds
         if vad_results[-1]["end"] < last_segment_should_end_before:
+            self.client.audio_capture_time = time.time()
+            print("going for transcription")
             transcription = await asr_pipeline.transcribe(self.client)
-            print("transcription", transcription["text"])
+            print("transcription")
+            print(transcription)
+
+            print(
+                "time taken for transcription",
+                time.time() - self.client.audio_capture_time,
+            )
             self.client.transcription_text += transcription["text"]
             self.silence_start_time = time.time()
             if transcription["text"] != "":

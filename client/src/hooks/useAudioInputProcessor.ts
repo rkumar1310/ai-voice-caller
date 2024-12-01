@@ -1,21 +1,20 @@
 import { useCallback } from "react";
 
-export default function useAudioInputProcessor({
-    context,
-    sendWebsocketMessage,
-}: {
-    context: AudioContext | null;
-    sendWebsocketMessage: (message: ArrayBufferLike | string) => void;
-}) {
+export default function useAudioInputProcessor(
+    context: AudioContext | null,
+    sendWebsocketMessage: (message: ArrayBufferLike | string) => void
+) {
     const sendChunk = useCallback(
         (audioData: ArrayBufferLike) => {
             sendWebsocketMessage(audioData);
         },
         [sendWebsocketMessage]
     );
+
     const processAudio = useCallback(
         (sampleData: Float32Array) => {
             if (!context) {
+                console.error("Audio context not initialized");
                 return;
             }
             const outputSampleRate = 16000;
@@ -44,7 +43,7 @@ export default function useAudioInputProcessor({
             console.error("Sample rate too small.");
             return;
         } else if (inputSampleRate === outputSampleRate) {
-            return;
+            return buffer;
         }
 
         const sampleRateRatio = inputSampleRate / outputSampleRate;

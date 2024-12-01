@@ -1,3 +1,4 @@
+import time
 from typing import List
 
 from autogen_core.base import MessageContext
@@ -15,7 +16,6 @@ from autogen_core.components.models import (
 )
 from rich.console import Console
 from rich.markdown import Markdown
-
 from src.multi_agent.messages import GroupChatMessage, RequestToSpeak
 
 
@@ -28,12 +28,14 @@ class BaseGroupChatAgent(RoutedAgent):
         group_chat_topic_type: str,
         model_client: ChatCompletionClient,
         system_message: str,
+        client,
     ) -> None:
         super().__init__(description=description)
         self._group_chat_topic_type = group_chat_topic_type
         self._model_client = model_client
         self._system_message = SystemMessage(system_message)
         self._chat_history: List[LLMMessage] = []
+        self.client = client
 
     @message_handler
     async def handle_message(
@@ -66,6 +68,10 @@ class BaseGroupChatAgent(RoutedAgent):
         assert isinstance(completion.content, str)
         self._chat_history.append(
             AssistantMessage(content=completion.content, source=self.id.type)
+        )
+        print(
+            "time taken to get chat answer response",
+            time.time() - self.client.audio_capture_time,
         )
         Console().print(Markdown(completion.content))
         # print(completion.content, flush=True)

@@ -34,6 +34,8 @@ export default function StartButton() {
                 position: "absolute",
                 width: "100vw",
                 height: "100dvh",
+                display: isConnected ? "none" : "block",
+                backdropFilter: "blur(10px)",
             }}
         >
             <button
@@ -51,7 +53,6 @@ export default function StartButton() {
                     textTransform: "uppercase",
                     fontFamily: "sans-serif",
                     fontSize: "10rem",
-                    display: isConnected ? "none" : "block",
                     fontWeight: 900,
                 }}
             >

@@ -38,8 +38,8 @@ class PyannoteVAD(VADInterface):
         pyannote_args = kwargs.get(
             "pyannote_args",
             {
-                "onset": 0.9,
-                "offset": 0.9,
+                "onset": 0.5,
+                "offset": 0.5,
                 "min_duration_on": 0.3,
                 "min_duration_off": 0.3,
             },
@@ -53,7 +53,7 @@ class PyannoteVAD(VADInterface):
             client.scratch_buffer, client.get_file_name()
         )
         vad_results = self.vad_pipeline(audio_file_path)
-        remove(audio_file_path)
+        # remove(audio_file_path)
         vad_segments = []
         if len(vad_results) > 0:
             vad_segments = [

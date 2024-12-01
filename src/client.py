@@ -1,6 +1,8 @@
 # isort: skip_file
 
 import asyncio
+import time
+import wave
 from src.buffering_strategy.buffering_strategy_factory import (
     BufferingStrategyFactory,
 )
@@ -35,7 +37,7 @@ class Client:
             "language": None,
             "processing_strategy": "silence_at_end_of_chunk",
             "processing_args": {
-                "chunk_length_seconds": 2,
+                "chunk_length_seconds": 3,
                 "chunk_offset_seconds": 0.1,
             },
         }
@@ -49,9 +51,16 @@ class Client:
             **self.config["processing_args"],
         )
         self.websocket = websocket
-        self.multi_agent = MultiAgentTTS(self, websocket)
         self.transcription_queue = asyncio.Queue()
+
+        self.multi_agent = MultiAgentTTS(self, websocket)
         self.transcription_text = ""
+        # file saving stuff
+        self.enable_file_saving = True
+        self.last_saved_at = 0
+        self.file_save_buffer = bytearray()
+        self.file_save_interval = 0.5  # in seconds
+        self.audio_capture_time = 0
 
     def on_transcription(self, transcription):
         # reset because the input is sent to the TTS
@@ -71,6 +80,16 @@ class Client:
 
     def append_audio_data(self, audio_data):
         self.buffer.extend(audio_data)
+        if self.enable_file_saving:
+            self.file_save_buffer.extend(audio_data)
+            if time.time() - self.last_saved_at > self.file_save_interval:
+                file_path = f"audio_files/{self.client_id}_full_audio.wav"
+                with wave.open(file_path, "wb") as wav_file:
+                    wav_file.setnchannels(1)  # Assuming mono audio
+                    wav_file.setsampwidth(2)
+                    wav_file.setframerate(16000)
+                    wav_file.writeframes(self.file_save_buffer)
+                self.last_saved_at = time.time()
         self.total_samples += len(audio_data) / self.samples_width
 
     def clear_buffer(self):

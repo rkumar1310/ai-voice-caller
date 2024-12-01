@@ -25,4 +25,19 @@ async def save_audio_to_file(
         wav_file.setframerate(16000)
         wav_file.writeframes(audio_data)
 
+    # load the audio file for noise reduction
+    from scipy.io import wavfile
+    import noisereduce as nr
+
+    # load data
+    rate, data = wavfile.read(file_path)
+
+    # change file name
+    base, ext = os.path.splitext(file_path)
+    noise_reduced_path = f"{base}_noise_reduced{ext}"
+
+    # perform noise reduction
+    reduced_noise = nr.reduce_noise(y=data, sr=rate)
+    wavfile.write(noise_reduced_path, rate, reduced_noise)
+
     return file_path

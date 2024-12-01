@@ -63,6 +63,7 @@ class MultiAgent:
                     model="gpt-4o-mini",
                     api_key=api_key,
                 ),
+                client=self.client,
             ),
         )
         await self.runtime.add_subscription(

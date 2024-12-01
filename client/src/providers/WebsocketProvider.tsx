@@ -34,29 +34,37 @@ export default function WebsocketProvider({
         [setMessageCallbacks]
     );
 
+    const removeMessageCallback = useCallback(
+        (callback: (event: MessageEvent) => void) => {
+            setMessageCallbacks((prev) => prev.filter((cb) => cb !== callback));
+        },
+        [setMessageCallbacks]
+    );
+
     const receiveMessage = useCallback(
         (event: MessageEvent) => {
-            console.log("Received message", event);
-            if (typeof event.data === "string") {
-                const data = JSON.parse(event.data);
-                console.log("Received data", data);
-                if (data.type === "mic") {
-                    setApplicationState((prev) => ({
-                        ...prev,
-                        micState: data.state,
-                    }));
-                }
-            }
+            // TODO: optimize this
+            // if (typeof event.data === "string") {
+            //     const data = JSON.parse(event.data);
+            //     if (data.type === "mic") {
+            //         setApplicationState((prev) => ({
+            //             ...prev,
+            //             micState: data.state,
+            //         }));
+            //     }
+            // }
         },
         [setApplicationState]
     );
 
     useEffect(() => {
         addMessageCallback(receiveMessage);
-    }, [addMessageCallback, receiveMessage]);
+        return () => {
+            removeMessageCallback(receiveMessage);
+        };
+    }, [addMessageCallback, receiveMessage, removeMessageCallback]);
 
     useEffect(() => {
-        console.log("Connected", connected);
         if (connected) {
             setApplicationState((prev) => ({
                 ...prev,

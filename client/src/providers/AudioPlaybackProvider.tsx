@@ -8,8 +8,13 @@ export default function AudioPlaybackProvider({
 }: {
     children: React.ReactNode;
 }) {
-    const { context, enqueueAudioChunk, setupPlayBack, stopAndClearAudio } =
-        useAudioPlayback();
+    const {
+        context,
+        enqueueAudioChunk,
+        setupPlayBack,
+        stopAndClearAudio,
+        isPlaying,
+    } = useAudioPlayback();
     return (
         <AudioPlaybackContext.Provider
             value={{
@@ -17,6 +22,7 @@ export default function AudioPlaybackProvider({
                 enqueueAudioChunk,
                 setupPlayBack,
                 stopAndClearAudio,
+                isPlaying,
             }}
         >
             {children}

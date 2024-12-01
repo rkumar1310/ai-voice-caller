@@ -1,3 +1,4 @@
+import time
 from openai import OpenAI
 from src.multi_agent.multi_agent import MultiAgent
 
@@ -21,14 +22,22 @@ class MultiAgentTTS:
     async def on_message(self, message, ctx):
         # TODO: Implement the text-to-speech functionality and stream the audio data to the client.
         print("MultiAgentTTS: received message", message, flush=True)
+        print(
+            "multiagent received message time taken",
+            time.time() - self.client.audio_capture_time,
+        )
         from openai import OpenAI
 
-        # await self.elevenlabs_tts(message.body.content)
-        await self.openai_tts(message.body.content)
+        await self.elevenlabs_tts(message.body.content)
+        # await self.openai_tts(message.body.content)
 
     async def openai_tts(self, message):
         response = self.openai_client.audio.speech.create(
             model="tts-1", voice="onyx", input=message, response_format="pcm"
+        )
+
+        print(
+            "time taken to get response", time.time() - self.client.audio_capture_time
         )
         # send this audio data to the websocket
         for data in response.iter_bytes(1024):
@@ -36,9 +45,9 @@ class MultiAgentTTS:
 
     async def elevenlabs_tts(self, message):
         from elevenlabs import stream
-        from elevenlabs.client import ElevenLabs
+        from elevenlabs.client import AsyncElevenLabs
 
-        client = ElevenLabs(
+        client = AsyncElevenLabs(
             api_key="sk_4b12e31aac58ccfddd7c31ea9a568fabbdd6735f894978ac",  # Defaults to ELEVEN_API_KEY
         )
 
@@ -47,6 +56,28 @@ class MultiAgentTTS:
         # ):
         #     await self.websocket.send(chunk)
 
-        audio = client.generate(text=message, voice="Brian", model="eleven_turbo_v2_5")
+        response = await client.generate(
+            text=message,
+            voice="Brian",
+            model="eleven_turbo_v2_5",
+            output_format="pcm_16000",
+            stream=True,
+        )
 
-        await self.websocket.send(audio)
+        hasFirstChunk = False
+
+        async for chunk in response:
+            if not hasFirstChunk:
+                hasFirstChunk = True
+                print(
+                    "time taken to get audio response",
+                    time.time() - self.client.audio_capture_time,
+                )
+
+                continue
+            await self.websocket.send(chunk)
+
+        print(f"Response type: {type(response)}")
+
+
+# await self.websocket.send(audio)

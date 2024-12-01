@@ -23,6 +23,13 @@ export const MicrophoneProvider = ({
         []
     );
 
+    const removeAudioCallback = useCallback(
+        (callback: (event: Float32Array) => void) => {
+            setAudioCallbacks((prev) => prev.filter((cb) => cb !== callback));
+        },
+        []
+    );
+
     return (
         <MicrophoneContext.Provider
             value={{
@@ -30,6 +37,7 @@ export const MicrophoneProvider = ({
                 startRecording,
                 stopRecording,
                 addAudioCallback,
+                removeAudioCallback,
             }}
         >
             {children}

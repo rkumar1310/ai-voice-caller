@@ -7,13 +7,13 @@ import { useCallback, useEffect, useState } from "react";
 
 export default function Agent() {
     const { addMessageCallback } = useWebsocketContext();
-    const { enqueueAudioChunk, stopAndClearAudio } = useAudioPlaybackContext();
+    const { enqueueAudioChunk, stopAndClearAudio, isPlaying } =
+        useAudioPlaybackContext();
     const { applicationState } = useApplicationState();
     const [active, setActive] = useState(false);
 
     const processWebsocketMessage = useCallback(
         async (event: MessageEvent) => {
-            console.log("Websocket message:", event.data);
             if (event.data instanceof ArrayBuffer) {
                 // Handle audio chunk (ArrayBuffer)
                 enqueueAudioChunk(event.data);
@@ -21,8 +21,6 @@ export default function Agent() {
                 // Handle audio chunk (Blob)
                 const arrayBuffer = await event.data.arrayBuffer();
                 enqueueAudioChunk(arrayBuffer);
-            } else {
-                console.warn("Unknown data type received:", event.data);
             }
         },
         [enqueueAudioChunk]
@@ -30,10 +28,13 @@ export default function Agent() {
 
     useEffect(() => {
         if (applicationState.micState === "speaking") {
-            stopAndClearAudio();
-            setActive(false);
+            // stopAndClearAudio();
         }
     }, [applicationState.micState, stopAndClearAudio]);
+
+    useEffect(() => {
+        setActive(isPlaying);
+    }, [isPlaying]);
 
     useEffect(() => {
         addMessageCallback(processWebsocketMessage);

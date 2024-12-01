@@ -22,12 +22,6 @@ export default function useMicrophone({
                 "realtime-audio-processor"
             );
 
-            // Handle messages from the Worklet
-            node.port.onmessage = (event) => {
-                console.log("Received audio data:", event.data);
-                // Handle raw audio data here, e.g., send it to a server
-            };
-
             workletNodeRef.current = node;
 
             return node;
@@ -37,7 +31,9 @@ export default function useMicrophone({
     }, [context]);
 
     useEffect(() => {
-        const context = new AudioContext();
+        const context = new AudioContext({
+            sampleRate: 16000,
+        });
         setContext(context);
 
         return () => {
@@ -51,7 +47,13 @@ export default function useMicrophone({
         }
 
         navigator.mediaDevices
-            .getUserMedia({ audio: true })
+            .getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    autoGainControl: false,
+                    noiseSuppression: true,
+                },
+            })
             .then(async (stream) => {
                 const input = context.createMediaStreamSource(stream);
                 const recordingNode = await setupRecordingWorkletNode();
