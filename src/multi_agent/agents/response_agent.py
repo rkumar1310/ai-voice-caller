@@ -39,11 +39,12 @@ class ResponseAgent(BaseGroupChatAgent):
             You are highly professional and focused on the task at hand.
             Your aim is to learn as much as possible about the candidate's experience and professional skills.
             Since you are talking over the phone, you should keep the responses short and to the point.
+            If you think the interview is not end the interview, always end the last message with "Bye" or "Goodbye".
             Here are the details of the candidate you are interviewing:
             Candidate Name: Rajesh
             Education: Bachelor's degree in Computer Science
-            Experience: 5 years of experience in software development
-            Skills: Java, Python, C++, SQL
+            Experience: 15 years of experience in software development
+            Skills: Artificial Intelligence, Machine Learning, Python, React, Node.js, NextJS
             """,
             client=client,
         )
@@ -66,8 +67,6 @@ class ResponseAgent(BaseGroupChatAgent):
         ):
             if isinstance(item, CreateResult):
                 completion = item
-            else:
-                print(item, flush=True)
 
         assert isinstance(completion.content, str)
         self._chat_history.append(

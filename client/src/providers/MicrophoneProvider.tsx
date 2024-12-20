@@ -12,9 +12,10 @@ export const MicrophoneProvider = ({
     const [audioCallbacks, setAudioCallbacks] = useState<
         ((sampleData: Float32Array) => void)[]
     >([]);
-    const { context, startRecording, stopRecording } = useMicrophone({
-        audioCallbacks,
-    });
+    const { context, startRecording, stopRecording, audioLevel } =
+        useMicrophone({
+            audioCallbacks,
+        });
 
     const addAudioCallback = useCallback(
         (callback: (event: Float32Array) => void) => {
@@ -38,6 +39,7 @@ export const MicrophoneProvider = ({
                 stopRecording,
                 addAudioCallback,
                 removeAudioCallback,
+                audioLevel,
             }}
         >
             {children}

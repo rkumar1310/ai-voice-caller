@@ -1,13 +1,12 @@
 import MicIcon from "@/icons/Mic";
 import SpeakerBox from "@/components/SpeakerBox";
 import { useApplicationState } from "@/context/ApplicationStateContext";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMicrophoneContext } from "@/context/MicrophoneContext";
 import useAudioInputProcessor from "@/hooks/useAudioInputProcessor";
 import { useWebsocketContext } from "@/context/WebsocketContext";
 
 export default function User() {
-    const [active, setActive] = useState(false);
     const { sendWebsocketMessage } = useWebsocketContext();
 
     const {
@@ -16,6 +15,7 @@ export default function User() {
         stopRecording,
         context,
         removeAudioCallback,
+        audioLevel,
     } = useMicrophoneContext();
 
     const { processAudio } = useAudioInputProcessor(
@@ -37,7 +37,7 @@ export default function User() {
         if (applicationState.isConnected) {
             startRecording();
         }
-        setActive(applicationState.micState === "speaking");
+        // setActive(applicationState.micState === "speaking");
 
         return () => {
             stopRecording();
@@ -45,7 +45,7 @@ export default function User() {
     }, [applicationState, startRecording, stopRecording]);
 
     return (
-        <SpeakerBox active={active}>
+        <SpeakerBox active={audioLevel > 0.1} audioLevel={audioLevel}>
             <MicIcon
                 style={{
                     width: "50%",

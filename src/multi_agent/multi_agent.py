@@ -102,10 +102,7 @@ class MultiAgent:
             self.runtime,
             "group_chat_manager",
             lambda: GroupChatManager(
-                participant_topic_types=[
-                    response_topic_type,
-                    user_topic_type,
-                ],
+                user_topic_type=user_topic_type,
                 main_interviewer_topic_type=response_topic_type,
                 model_client=OpenAIChatCompletionClient(
                     model="gpt-4o-mini",

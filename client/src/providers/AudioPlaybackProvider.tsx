@@ -14,6 +14,7 @@ export default function AudioPlaybackProvider({
         setupPlayBack,
         stopAndClearAudio,
         isPlaying,
+        audioLevel,
     } = useAudioPlayback();
     return (
         <AudioPlaybackContext.Provider
@@ -23,6 +24,7 @@ export default function AudioPlaybackProvider({
                 setupPlayBack,
                 stopAndClearAudio,
                 isPlaying,
+                audioLevel,
             }}
         >
             {children}

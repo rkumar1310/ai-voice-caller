@@ -7,6 +7,7 @@ export default function useMicrophone({
 }) {
     const [context, setContext] = useState<AudioContext | null>(null);
     const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+    const [audioLevel, setAudioLevel] = useState<number>(0);
 
     const setupRecordingWorkletNode = useCallback(async () => {
         try {
@@ -61,8 +62,16 @@ export default function useMicrophone({
                     throw new Error("Recording node not initialized");
                 }
                 recordingNode.port.onmessage = (event) => {
+                    const sampleData = event.data as Float32Array;
+                    const average =
+                        sampleData.reduce(
+                            (sum, value) => sum + Math.abs(value),
+                            0
+                        ) / sampleData.length;
+                    const normalizedLevel = Math.min(100, (average / 1) * 1000); // Assuming the sample data is normalized between -1 and 1
+                    setAudioLevel(normalizedLevel);
                     audioCallbacks.forEach((callback) => {
-                        callback(event.data);
+                        callback(sampleData);
                     });
                 };
                 input.connect(recordingNode);
@@ -82,5 +91,6 @@ export default function useMicrophone({
         context,
         startRecording,
         stopRecording,
+        audioLevel,
     };
 }

@@ -48,7 +48,7 @@ class MultiAgentTTS:
         from elevenlabs.client import AsyncElevenLabs
 
         client = AsyncElevenLabs(
-            api_key="sk_4b12e31aac58ccfddd7c31ea9a568fabbdd6735f894978ac",  # Defaults to ELEVEN_API_KEY
+            api_key="sk_513ae66c2bdd55c88deea37f61664208bbde8f00bf093eb3",  # Defaults to ELEVEN_API_KEY
         )
 
         # for chunk in client.generate(

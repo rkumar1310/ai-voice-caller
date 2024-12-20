@@ -1,9 +1,11 @@
 export default function SpeakerBox({
     children,
     active,
+    audioLevel,
 }: {
     children?: React.ReactNode;
     active?: boolean;
+    audioLevel?: number;
 }) {
     return (
         <div
@@ -20,11 +22,12 @@ export default function SpeakerBox({
             <div
                 style={{
                     position: "absolute",
-                    width: "100%",
-                    height: "100%",
+                    width: `100%`,
+                    height: `100%`,
                     background: "rgba(256,256,256,0.2)",
                     zIndex: 1,
                     borderRadius: "50%",
+                    transform: `scale(${1 + ((audioLevel || 0) * 0.2) / 100})`,
                 }}
             >
                 <div

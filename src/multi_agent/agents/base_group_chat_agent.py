@@ -13,6 +13,7 @@ from autogen_core.components.models import (
     LLMMessage,
     SystemMessage,
     UserMessage,
+    CreateResult,
 )
 from rich.console import Console
 from rich.markdown import Markdown
@@ -55,6 +56,7 @@ class BaseGroupChatAgent(RoutedAgent):
         self, message: RequestToSpeak, ctx: MessageContext
     ) -> None:
         # print(f"\n{'-'*80}\n{self.id.type}:", flush=True)
+        print("requesting answer at ", time.time() - self.client.audio_capture_time)
         Console().print(Markdown(f"### {self.id.type}: "))
         self._chat_history.append(
             UserMessage(
@@ -62,9 +64,22 @@ class BaseGroupChatAgent(RoutedAgent):
                 source="system",
             )
         )
-        completion = await self._model_client.create(
+
+        has_received_first_chunk = False
+        # async generator
+        async for item in self._model_client.create_stream(
             [self._system_message] + self._chat_history
-        )
+        ):
+            if isinstance(item, CreateResult):
+                completion = item
+            else:
+                if not has_received_first_chunk:
+                    has_received_first_chunk = True
+                    print(
+                        "received first chunk at ",
+                        time.time() - self.client.audio_capture_time,
+                    )
+
         assert isinstance(completion.content, str)
         self._chat_history.append(
             AssistantMessage(content=completion.content, source=self.id.type)

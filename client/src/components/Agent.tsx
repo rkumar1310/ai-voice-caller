@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 
 export default function Agent() {
     const { addMessageCallback } = useWebsocketContext();
-    const { enqueueAudioChunk, stopAndClearAudio, isPlaying } =
+    const { enqueueAudioChunk, stopAndClearAudio, isPlaying, audioLevel } =
         useAudioPlaybackContext();
     const { applicationState } = useApplicationState();
     const [active, setActive] = useState(false);
@@ -40,7 +40,7 @@ export default function Agent() {
         addMessageCallback(processWebsocketMessage);
     }, [addMessageCallback, processWebsocketMessage]);
     return (
-        <SpeakerBox active={active}>
+        <SpeakerBox active={active} audioLevel={audioLevel}>
             <BotIcon
                 style={{
                     width: "50%",

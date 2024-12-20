@@ -8,6 +8,7 @@ export const MicrophoneContext = createContext<{
     stopRecording: () => void;
     addAudioCallback: (callback: (event: Float32Array) => void) => void;
     removeAudioCallback: (callback: (event: Float32Array) => void) => void;
+    audioLevel: number;
 } | null>(null);
 
 export const useMicrophoneContext = () => {

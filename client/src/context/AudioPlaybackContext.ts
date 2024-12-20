@@ -6,6 +6,7 @@ export const AudioPlaybackContext = createContext<{
     setupPlayBack: () => void;
     stopAndClearAudio: () => void;
     isPlaying: boolean;
+    audioLevel: number;
 } | null>(null);
 
 export const useAudioPlaybackContext = () => {

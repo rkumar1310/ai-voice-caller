@@ -4,6 +4,7 @@ export default function useAudioPlayback() {
     const [context, setContext] = useState<AudioContext | null>(null);
     const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
     const workletNode = useRef<AudioWorkletNode | null>(null);
+    const [audioLevel, setAudioLevel] = useState<number>(0);
 
     const setupPlayBack = useCallback(async () => {
         if (context) return; // Prevent multiple setups
@@ -35,14 +36,11 @@ export default function useAudioPlayback() {
                 return;
             }
 
-            // const audioBuffer = await context.decodeAudioData(audioChunk);
             const audioBuffer = new Int16Array(audioChunk);
             if (!audioBuffer) {
                 return;
             }
 
-            // Convert AudioBuffer to Float32Array maybe inside the AudioWorklet
-            // const channelData = audioBuffer.getChannelData(0);
             workletNode.current.port.postMessage({
                 type: "enqueue",
                 chunk: audioBuffer,
@@ -65,8 +63,12 @@ export default function useAudioPlayback() {
         const detectAudio = () => {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             analyser.getByteFrequencyData(dataArray);
-            const hasAudio = dataArray.some((value) => value > 0);
-            setIsPlaying(hasAudio);
+            const average =
+                dataArray.reduce((sum, value) => sum + value, 0) /
+                dataArray.length;
+            const normalizedLevel = Math.min(100, (average / 255) * 100);
+            setAudioLevel(normalizedLevel);
+            setIsPlaying(normalizedLevel > 0);
         };
 
         const interval = setInterval(detectAudio, 100);
@@ -80,5 +82,6 @@ export default function useAudioPlayback() {
         setupPlayBack,
         context,
         isPlaying,
+        audioLevel,
     };
 }
